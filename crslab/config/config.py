@@ -97,12 +97,12 @@ class Config:
         self.build_path()
 
         # log
-        log_dir = dataset + '_' + model_name + '_' + self.time_stamp  # Expected name='ReDail_MultiBERT_2021-2-13-13-14'
-        log_dir = os.path.join(LOG_PATH, log_dir)
+        log_dir = LOG_PATH # dataset + '_' + model_name + '_' + self.time_stamp  # Expected name='ReDail_MultiBERT_2021-2-13-13-14'
+        # log_dir = os.path.join(LOG_PATH, log_dir)
         os.makedirs(log_dir, exist_ok=True)
         self.opt['LOG_PATH'] = log_dir
 
-        # log_name = self.opt.get("log_name", dataset + '_' + model_name + '_' + self.time_stamp) + ".log"
+        log_name = self.opt.get("log_name", dataset + '_' + model_name + '_' + self.time_stamp) + ".log"
         # if not os.path.exists("log"):
         #     os.makedirs("log")
         logger.remove()
@@ -111,7 +111,7 @@ class Config:
         else:
             level = 'INFO'
         
-        log_name = self.log_prefix + '.log'
+        # log_name = self.log_prefix + '.log'
    
         logger.add(
             os.path.join(log_dir, log_name.format('summury')), 

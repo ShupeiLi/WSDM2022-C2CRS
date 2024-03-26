@@ -39,7 +39,7 @@ class StandardEvaluator(BaseEvaluator):
         # rec
         self.rec_metrics = Metrics()
         # gen
-        self.dist_set = defaultdict(list)
+        self.dist_set = defaultdict(set)
         self.sent_len_list = defaultdict(list)
         self.dist_cnt = 0
         self.gen_metrics = Metrics()
