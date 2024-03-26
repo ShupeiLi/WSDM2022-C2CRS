@@ -62,7 +62,7 @@ class StandardEvaluator(BaseEvaluator):
     def rec_evaluate(self, ranks, label):
         for k in [1, 10, 50]:
             if len(ranks) >= k:
-                self.rec_metrics.add(f"hit@{k}", HitMetric.compute(ranks, label, k))
+                self.rec_metrics.add(f"recall@{k}", HitMetric.compute(ranks, label, k))
                 self.rec_metrics.add(f"ndcg@{k}", NDCGMetric.compute(ranks, label, k))
                 self.rec_metrics.add(f"mrr@{k}", MRRMetric.compute(ranks, label, k))
     
@@ -78,14 +78,15 @@ class StandardEvaluator(BaseEvaluator):
                 ndcgs.append(ndcgk)
                 mrrs.append(mrrk)
 
-                self.rec_metrics.add(f"hit@{k}", hitk)
+                self.rec_metrics.add(f"recall@{k}", hitk)
                 self.rec_metrics.add(f"ndcg@{k}", ndcgk)
                 self.rec_metrics.add(f"mrr@{k}", mrrk)
 
+        # TODO: check
         assert len(hits) == 3
-        if score_type == 'hit':
+        if score_type == 'recall':
             score = (hits[0].value() + hits[-1].value()) / 2
-        elif score_type == 'hit50':
+        elif score_type == 'recall50':
             score = hits[-1].value()
         elif score_type == 'rank':
             score = 1 / (fully_rec_ranks.index(label) + 1)
@@ -98,13 +99,20 @@ class StandardEvaluator(BaseEvaluator):
         if hyp:
             self.gen_metrics.add("f1", F1Metric.compute(hyp, refs))
 
+            # NOTE: ROUGE-{1, 2, l}
+            rouge_scores = RougeMetric.compute_many(hyp, refs)
+            rouge_keys = ("1", "2", "L")
+            for i in range(3):
+                self.gen_metrics.add(f"rouge-{rouge_keys[i]}", rouge_scores[i])
+
+            # NOTE: BLEU-{1, 2, 3, 4}, Inter-distinct-{1, 2, 3, 4}, Intra-distinct-{1, 2, 3, 4}
             for k in range(1, 5):
                 self.gen_metrics.add(f"bleu@{k}", BleuMetric.compute(hyp, refs, k))
+                self.gen_metrics.add(f"intra-dist@{k}", IntraDistinctMetric.compute(hyp, refs, k))
+                hyp_token = gen.normalize_answer(hyp).split()  # NOTE: The original code doesn't split tokens (a bug?).
+                for token in ngrams(hyp, k):
+                    self.dist_set[f"inter-dist@{k}"].add(token)
             self.dist_cnt += 1
-
-            for k in range(1, 5):
-                for token in ngrams(hyp_ListStr, k):
-                    self.dist_set[f"dist@{k}"].append(token)
 
             one_gram_list = [token for token in ngrams(hyp_ListStr, 1)]
             self.sent_len_list['sent_len'].append(len(one_gram_list))

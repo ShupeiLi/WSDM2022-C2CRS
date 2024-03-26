@@ -16,6 +16,8 @@ import numpy as np
 from nltk import ngrams
 from nltk.translate.bleu_score import sentence_bleu
 from sklearn.metrics.pairwise import cosine_similarity
+from nltk.translate import bleu_score as nltkbleu
+import rouge
 
 from crslab.evaluator.metrics.base import AverageMetric, SumMetric
 
@@ -38,7 +40,7 @@ def normalize_answer(s):
     s = re_punc.sub(' ', s)
     s = re_art.sub(' ', s)
     s = re_space.sub(' ', s)
-    # s = ' '.join(s.split())
+    s = ' '.join(s.split()) # Return a string
     return s
 
 
@@ -95,15 +97,56 @@ class BleuMetric(AverageMetric):
         """
         Compute approximate BLEU score between guess and a set of answers.
         """
-
-        weights = [0] * 4
-        weights[k - 1] = 1
+        weights =  [1 / k for _ in range(k)]  # Correct weights
         score = sentence_bleu(
-            [a.split(" ") for a in answers],
-            guess.split(" "),
+            [normalize_answer(a).split(" ") for a in answers],
+            normalize_answer(guess).split(" "),
+            smoothing_function=nltkbleu.SmoothingFunction(epsilon=1e-12).method1,
             weights=weights,
         )
         return BleuMetric(score)
+
+
+class RougeMetric(AverageMetric):
+    _evaluator = None
+
+    @staticmethod
+    def compute_many(guess: str, answers: List[str], measure: str = 'r'):
+        """
+        Compute ROUGE score.
+        """
+        measure = measure.lower()
+        assert measure in ('r', 'f', 'p'), "Parameter 'measure' must be one of the 'r', 'f', 'p'."
+        if RougeMetric._evaluator is None:
+            RougeMetric._evaluator = rouge.Rouge(metrics=['rouge-n', 'rouge-l'], max_n=2)
+        scores = [
+            RougeMetric._evaluator.get_scores(
+                normalize_answer(guess), normalize_answer(a)
+            )
+            for a in answers
+        ]
+        scores_rouge1 = max(score['rouge-1'][measure] for score in scores)
+        scores_rouge2 = max(score['rouge-2'][measure] for score in scores)
+        scores_rougeL = max(score['rouge-l'][measure] for score in scores)
+        return (
+            RougeMetric(scores_rouge1),
+            RougeMetric(scores_rouge2),
+            RougeMetric(scores_rougeL),
+        )
+
+
+class IntraDistinctMetric(AverageMetric):
+    """
+    Compute intra-distinct (sample-based).
+    """
+    @staticmethod
+    def compute(guess: str, answers: List[str], k: int) -> Optional['IntraDistinctMetric']:
+        intra = 0.0
+        for answer in answers:
+            tokens = normalize_answer(answer).split()
+            counts = Counter(ngrams(tokens, k))
+            intra += max(len(counts), 1e-12) / max(sum(counts.values()), 1e-5)
+        return IntraDistinctMetric(intra, len(answers))
 
 
 class DistMetric(SumMetric):

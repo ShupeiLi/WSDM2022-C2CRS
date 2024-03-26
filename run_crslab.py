@@ -19,8 +19,8 @@ if __name__ == '__main__':
     # parse args
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--config', type=str,
-                        default='config/recommendation/cobert/tgredial.yaml', help='config file(yaml) path')
-    parser.add_argument('-g', '--gpu', type=str, default='1',
+                        default='config/crs/c2crs/redial.yaml', help='config file(yaml) path')
+    parser.add_argument('-g', '--gpu', type=str, default='0',
                         help='specify gpu id(s) to use, only support using a single gpu now. Defaults to cpu(-1).')
     parser.add_argument('-sd', '--save_data', action='store_true',
                         help='save processed dataset')
