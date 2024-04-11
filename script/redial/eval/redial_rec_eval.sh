@@ -1,4 +1,4 @@
-CUDA_VISIBLE_DEVICES=1 python run_crslab.py \
+CUDA_VISIBLE_DEVICES=0 python run_crslab.py \
     -c config/crs/c2crs/redial.yaml \
     -g 0 \
     -ss  \
