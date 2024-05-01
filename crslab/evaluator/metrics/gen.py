@@ -40,7 +40,7 @@ def normalize_answer(s):
     s = re_punc.sub(' ', s)
     s = re_art.sub(' ', s)
     s = re_space.sub(' ', s)
-    s = ' '.join(s.split()) # Return a string
+    s = ' '.join(s.split())  # Return a string
     return s
 
 
@@ -97,11 +97,10 @@ class BleuMetric(AverageMetric):
         """
         Compute approximate BLEU score between guess and a set of answers.
         """
-        weights =  [1 / k for _ in range(k)]  # Correct weights
+        weights = [1 / k for _ in range(k)]  # Correct weights
         score = sentence_bleu(
-            [normalize_answer(a).split(" ") for a in answers],
-            normalize_answer(guess).split(" "),
-            smoothing_function=nltkbleu.SmoothingFunction(epsilon=1e-12).method1,
+            [a.split(" ") for a in answers],
+            guess.split(" "),
             weights=weights,
         )
         return BleuMetric(score)
@@ -121,7 +120,7 @@ class RougeMetric(AverageMetric):
             RougeMetric._evaluator = rouge.Rouge(metrics=['rouge-n', 'rouge-l'], max_n=2)
         scores = [
             RougeMetric._evaluator.get_scores(
-                normalize_answer(guess), normalize_answer(a)
+                guess, a
             )
             for a in answers
         ]
@@ -142,11 +141,10 @@ class IntraDistinctMetric(AverageMetric):
     @staticmethod
     def compute(guess: str, answers: List[str], k: int) -> Optional['IntraDistinctMetric']:
         intra = 0.0
-        for answer in answers:
-            tokens = normalize_answer(answer).split()
-            counts = Counter(ngrams(tokens, k))
-            intra += max(len(counts), 1e-12) / max(sum(counts.values()), 1e-5)
-        return IntraDistinctMetric(intra, len(answers))
+        tokens = guess.split()
+        counts = Counter(ngrams(tokens, k))
+        intra += max(len(counts), 1e-12) / max(sum(counts.values()), 1e-5)
+        return IntraDistinctMetric(intra, 1.0)
 
 
 class DistMetric(SumMetric):

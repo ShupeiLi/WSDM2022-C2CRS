@@ -24,6 +24,7 @@ from crslab.system.utils.functions import ind2txt, ind2txt2
 import random
 from tqdm import tqdm
 
+
 class C2CRS_System(BaseSystem):
     """This is the system for TGReDial model"""
 
@@ -44,7 +45,7 @@ class C2CRS_System(BaseSystem):
 
         """
         super(C2CRS_System, self).__init__(opt, train_dataloader, valid_dataloader,
-                                             test_dataloader, vocab, side_data, restore_system, interact, debug)
+                                           test_dataloader, vocab, side_data, restore_system, interact, debug)
 
         self._init_token_attribute(vocab)
         self._init_rec_attribute(side_data, vocab)
@@ -53,7 +54,7 @@ class C2CRS_System(BaseSystem):
 
         self.language = dataset_language_map[self.opt['dataset']]
 
-        self.pertrain_save_epoches = [epoch-1 for epoch in eval(opt['pertrain_save_epoches'])]
+        self.pertrain_save_epoches = [epoch - 1 for epoch in eval(opt['pertrain_save_epoches'])]
 
     def _init_token_attribute(self, vocab):
         self.ind2tok = vocab['rec']['ind2tok']
@@ -65,31 +66,36 @@ class C2CRS_System(BaseSystem):
         self.item_ids = side_data['rec']['item_entity_ids']
         self.id2entity = side_data['rec']['entity_kg']['id2entity']
         self.dpath = side_data['rec']['dpath']
-        
+
         self.rec_ind2tok = vocab['rec']['ind2tok']
         self.rec_optim_opt = deepcopy(self.opt['rec'])
 
-        self.rec_batch_size = self.opt['rec_batch_size'] if self.opt['rec_batch_size'] != -1 else self.rec_optim_opt['batch_size']
+        self.rec_batch_size = self.opt['rec_batch_size'] if self.opt['rec_batch_size'] != -1 else self.rec_optim_opt[
+            'batch_size']
         self.rec_epoch = self.opt['rec_epoch'] if self.opt['rec_epoch'] != -1 else self.rec_optim_opt['epoch']
 
     def _init_conv_attribute(self, side_data, vocab):
         self.conv_optim_opt = self.opt['conv']
 
-        if self.conv_optim_opt.get('lr_scheduler', None) and 'Transformers' in self.conv_optim_opt['lr_scheduler']['name']:
+        if self.conv_optim_opt.get('lr_scheduler', None) and 'Transformers' in self.conv_optim_opt['lr_scheduler'][
+            'name']:
             batch_num = 0
             for _ in self.train_dataloader['rec'].get_conv_data(batch_size=self.conv_batch_size, shuffle=False):
                 batch_num += 1
             conv_training_steps = self.conv_epoch * floor(batch_num / self.conv_optim_opt.get('update_freq', 1))
             self.conv_optim_opt['lr_scheduler']['training_steps'] = conv_training_steps
 
-        self.conv_batch_size = self.opt['conv_batch_size'] if self.opt['conv_batch_size'] != -1 else self.conv_optim_opt['batch_size']
+        self.conv_batch_size = self.opt['conv_batch_size'] if self.opt['conv_batch_size'] != -1 else \
+        self.conv_optim_opt['batch_size']
         self.conv_epoch = self.opt['conv_epoch'] if self.opt['conv_epoch'] != -1 else self.conv_optim_opt['epoch']
 
     def _init_pretrain_attribute(self, side_data, vocab):
         if 'pretrain' in self.opt:
             self.pretrain_optim_opt = deepcopy(self.opt['pretrain'])
-            self.pretrain_epoch = self.opt['pretrain_epoch'] if self.opt['pretrain_epoch'] != -1 else self.pretrain_optim_opt['pretrain_epoch']
-            self.pretrain_batch_size = self.opt['pretrain_batch_size'] if self.opt['pretrain_batch_size'] != -1 else self.pretrain_optim_opt['batch_size']
+            self.pretrain_epoch = self.opt['pretrain_epoch'] if self.opt['pretrain_epoch'] != -1 else \
+            self.pretrain_optim_opt['pretrain_epoch']
+            self.pretrain_batch_size = self.opt['pretrain_batch_size'] if self.opt['pretrain_batch_size'] != -1 else \
+            self.pretrain_optim_opt['batch_size']
 
     def rec_evaluate(self, rec_predict, item_label):
         rec_predict = rec_predict.cpu()
@@ -100,7 +106,7 @@ class C2CRS_System(BaseSystem):
         for rec_rank, item in zip(rec_ranks, item_label):
             item = self.item_ids.index(item)
             self.evaluator.rec_evaluate(rec_rank, item)
-    
+
     def rec_evaluate_and_return_score(self, rec_predict, item_label):
         rec_predict = rec_predict.cpu()
         rec_predict = rec_predict[:, self.item_ids]
@@ -113,8 +119,9 @@ class C2CRS_System(BaseSystem):
         scores = []
         for rec_rank, item in zip(rec_ranks, item_label):
             item = self.item_ids.index(item)
-            scores.append(self.evaluator.rec_evaluate_and_return_score(rec_rank, fully_rec_ranks, item, self.opt['score_type']))
-        
+            scores.append(
+                self.evaluator.rec_evaluate_and_return_score(rec_rank, fully_rec_ranks, item, self.opt['score_type']))
+
         return scores, rec_ranks
 
     def conv_evaluate(self, prediction, response):
@@ -135,7 +142,7 @@ class C2CRS_System(BaseSystem):
     def step(self, batch, stage, mode, epoch=-1):
         batch, unbatchify_batch = batch
         self.step_default(batch, stage, mode, epoch)
-    
+
     def step_default(self, batch, stage, mode, epoch=-1):
         """
         stage: ['policy', 'rec', 'conv']
@@ -240,7 +247,7 @@ class C2CRS_System(BaseSystem):
             file_writer.writelines('\n')
 
         file_writer.close()
-    
+
     def get_file_writer(self, file_keywords: str, file_type: str):
         file_name = file_keywords + file_type
         file_path = os.path.join(self.opt['LOG_PATH'], file_name)
@@ -250,14 +257,13 @@ class C2CRS_System(BaseSystem):
             file_writer = open(file_path, 'w', encoding='utf-8')
 
         return file_writer
-    
+
     def convert_tensor_ids_to_tokens(self, token_ids):
         tokens = []
 
-        token_ids = token_ids.tolist() # List[int]
+        token_ids = token_ids.tolist()  # List[int]
         if not token_ids:
             return tokens
-
 
         for token_id in token_ids:
             if token_id == self.end_token_idx:
@@ -275,7 +281,7 @@ class C2CRS_System(BaseSystem):
             self.save_model(epoch=epoch, valid_metric=valid_metric)
         elif early_stop_result == 'Patience':
             pass
-            
+
         return False
 
     def fit(self):
@@ -283,7 +289,7 @@ class C2CRS_System(BaseSystem):
         self.pre_training()
         self.train_recommender_default()
         self.train_conversation_using_rec_model()
-    
+
     def extend_datasets(self):
         extend_train_dataset = self.train_dataloader['rec'].add_avi_info_to_init_dataset_u()
         self.train_dataloader['rec'].replace_dataset(extend_train_dataset)
@@ -308,10 +314,10 @@ class C2CRS_System(BaseSystem):
                   {'params': other_param}]
 
         logger.info('There are {} bert parameters unit, {} other parameters unit'
-            .format(len(bert_param), len(other_param)))
+                    .format(len(bert_param), len(other_param)))
 
         self.init_optim(deepcopy(self.pretrain_optim_opt), params)
-    
+
     def pretrain_recommender_convergence(self):
         for epoch in range(self.pretrain_epoch):
             self.pretrain_recommender_one_epoch(epoch)
@@ -323,7 +329,7 @@ class C2CRS_System(BaseSystem):
 
             if self.is_early_stop(valid_metric, epoch):
                 break
-    
+
     def pretrain_recommender_one_epoch(self, epoch):
         logger.info(f'[{self.log_prefix}][Recommender | Pretrain | Epoch {str(epoch)}]')
         self.evaluator.reset_metrics()
@@ -331,16 +337,16 @@ class C2CRS_System(BaseSystem):
                                                                shuffle=True):
             self.step(batch, stage='pretrain_rec', mode='train', epoch=epoch)
         self.evaluator.report()
-    
+
     def valid_pretrain_recommender(self, epoch):
         logger.info(f'[{self.log_prefix}][Recommender | Valid | Epoch {str(epoch)}]')
         with torch.no_grad():
             self.evaluator.reset_metrics()
-            for batch in self.valid_dataloader['rec'].get_rec_data(self.pretrain_batch_size, 
+            for batch in self.valid_dataloader['rec'].get_rec_data(self.pretrain_batch_size,
                                                                    shuffle=False):
                 self.step(batch, stage='pretrain_rec', mode='val', epoch=epoch)
             self.evaluator.report()
-            
+
         metric = self.evaluator.optim_metrics['loss']
 
         return metric
@@ -364,7 +370,7 @@ class C2CRS_System(BaseSystem):
                   {'params': other_param}]
 
         logger.info('There are {} bert parameters unit, {} other parameters unit'
-            .format(len(bert_param), len(other_param)))
+                    .format(len(bert_param), len(other_param)))
 
         self.init_optim(deepcopy(self.rec_optim_opt), params)
 
@@ -389,15 +395,15 @@ class C2CRS_System(BaseSystem):
         logger.info(f'[{self.log_prefix}][Recommender | Valid | Epoch {str(epoch)}]')
         with torch.no_grad():
             self.evaluator.reset_metrics()
-            for batch in self.valid_dataloader['rec'].get_rec_data(self.rec_batch_size, 
+            for batch in self.valid_dataloader['rec'].get_rec_data(self.rec_batch_size,
                                                                    shuffle=False):
                 self.step(batch, stage='rec', mode='val', epoch=epoch)
             self.evaluator.report()
-            
+
         metric = self.evaluator.rec_metrics['recall@1'] + self.evaluator.rec_metrics['recall@50']
 
         return metric
-    
+
     def test_recommender(self, epoch):
         logger.info(f'[{self.log_prefix}][Recommender | Test ]')
         with torch.no_grad():
@@ -468,6 +474,6 @@ class C2CRS_System(BaseSystem):
                     batch_size=self.conv_batch_size, shuffle=False):
                 self.step(batch, stage='conv', mode='test', epoch=epoch)
             self.evaluator.report()
-    
+
     def interact(self):
         pass

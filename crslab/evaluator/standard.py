@@ -39,7 +39,7 @@ class StandardEvaluator(BaseEvaluator):
         # rec
         self.rec_metrics = Metrics()
         # gen
-        self.dist_set = defaultdict(set)
+        self.dist_set = defaultdict(list)
         self.sent_len_list = defaultdict(list)
         self.dist_cnt = 0
         self.gen_metrics = Metrics()
@@ -82,7 +82,6 @@ class StandardEvaluator(BaseEvaluator):
                 self.rec_metrics.add(f"ndcg@{k}", ndcgk)
                 self.rec_metrics.add(f"mrr@{k}", mrrk)
 
-        # TODO: check
         assert len(hits) == 3
         if score_type == 'recall':
             score = (hits[0].value() + hits[-1].value()) / 2
@@ -109,9 +108,8 @@ class StandardEvaluator(BaseEvaluator):
             for k in range(1, 5):
                 self.gen_metrics.add(f"bleu@{k}", BleuMetric.compute(hyp, refs, k))
                 self.gen_metrics.add(f"intra-dist@{k}", IntraDistinctMetric.compute(hyp, refs, k))
-                hyp_token = gen.normalize_answer(hyp).split()  # NOTE: The original code doesn't split tokens (a bug?).
-                for token in ngrams(hyp, k):
-                    self.dist_set[f"inter-dist@{k}"].add(token)
+                for token in ngrams(hyp_ListStr, k):
+                    self.dist_set[f"inter-dist@{k}"].append(token)
             self.dist_cnt += 1
 
             one_gram_list = [token for token in ngrams(hyp_ListStr, 1)]
