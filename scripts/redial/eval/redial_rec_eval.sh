@@ -1,4 +1,6 @@
-CUDA_VISIBLE_DEVICES=0 python run_crslab.py \
+#! /usr/bin
+CUDA_VISIBLE_DEVICES=0 
+python run_crslab.py \
     -c config/crs/c2crs/redial.yaml \
     -g 0 \
     -ss  \
@@ -14,9 +16,9 @@ CUDA_VISIBLE_DEVICES=0 python run_crslab.py \
     --coarse_pretrain_epoch 0 \
     --pretrain_epoch 0 \
     --rec_epoch 0 \
-    --conv_epoch 23 \
+    --conv_epoch 0 \
     -rs \
-    --restore_path ReDial_C2CRS_Model2021-07-16-22-09-45 \
+    --restore_path rec-train \
     --model_file_for_restore C2CRS_Model_0.pth \
     --freeze_parameters_name k_c  \
     --freeze_parameters \

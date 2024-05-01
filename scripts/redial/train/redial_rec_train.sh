@@ -1,4 +1,6 @@
-CUDA_VISIBLE_DEVICES=0 python run_crslab.py \
+#! /usr/bin
+CUDA_VISIBLE_DEVICES=0 
+python run_crslab.py \
     -c config/crs/c2crs/redial.yaml \
     -g 0 \
     -ss \
@@ -14,4 +16,4 @@ CUDA_VISIBLE_DEVICES=0 python run_crslab.py \
     --coarse_pretrain_epoch 12 \
     --pretrain_epoch 25 \
     --rec_epoch 50 \
-    --conv_epoch 0  \
+    --conv_epoch 0

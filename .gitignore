@@ -1,6 +1,9 @@
 # Created by .ignore support plugin (hsz.mobi)
 ### Project
 
+log-backup
+model-backup
+
 item2review_level_keywords.pkl
 data
 log
