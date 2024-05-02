@@ -1,4 +1,6 @@
-CUDA_VISIBLE_DEVICES=0 python run_crslab.py \
+#! /usr/bin
+CUDA_VISIBLE_DEVICES=0
+python run_crslab.py \
     -c config/crs/c2crs/tgredial.yaml \
     -g 0 \
     -ss \
@@ -17,7 +19,7 @@ CUDA_VISIBLE_DEVICES=0 python run_crslab.py \
     --conv_epoch 0  \
     --nb_review 4  \
     -rs \
-    --restore_path TGReDial_C2CRS_Model2022-01-03-15-52-15 \
+    --restore_path conv-train \
     --model_file_for_restore C2CRS_Model_0.pth \
     --freeze_parameters_name k_c  \
     --freeze_parameters \
