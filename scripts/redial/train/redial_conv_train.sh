@@ -16,7 +16,7 @@ python run_crslab.py \
     --coarse_pretrain_epoch 0 \
     --pretrain_epoch 0 \
     --rec_epoch 0 \
-    --conv_epoch 23 \
+    --conv_epoch 30 \
     -rs \
     --restore_path rec-train \
     --model_file_for_restore C2CRS_Model_0.pth \

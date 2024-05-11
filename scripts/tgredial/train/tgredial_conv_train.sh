@@ -16,7 +16,7 @@ python run_crslab.py \
     --coarse_pretrain_epoch 0 \
     --pretrain_epoch 0 \
     --rec_epoch 0 \
-    --conv_epoch 22  \
+    --conv_epoch 30  \
     --nb_review 4  \
     -rs \
     --restore_path rec-train \
