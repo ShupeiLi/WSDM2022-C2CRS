@@ -1,7 +1,7 @@
 #! /usr/bash
 # Change n
 
-nhop="2"
+#nhop="2"
 model="c2crs"
 save_path="/root/autodl-fs/${model}/redial-dbpedia"
 

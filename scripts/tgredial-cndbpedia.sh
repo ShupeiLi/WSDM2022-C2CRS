@@ -1,8 +1,8 @@
 #! /usr/bin
 # Change n, key
 
-nhop="2"
-nkey="two"
+#nhop="2"
+#nkey="two"
 model="c2crs"
 save_path="/root/autodl-fs/${model}/tgredial-cndbpedia"
 

@@ -1,8 +1,8 @@
 #! /usr/bash
 # Change n
 
-nhop="2"
-nkey="two"
+#nhop="2"
+#nkey="two"
 model="c2crs"
 save_path="/root/autodl-fs/${model}/redial-conceptnet"
 
